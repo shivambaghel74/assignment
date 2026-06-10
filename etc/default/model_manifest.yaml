@@ -1,0 +1,22 @@
+model:
+  id: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+
+profiles:
+
+  latency:
+    description: Optimized for low response time
+    max_batch_size: 1
+    max_concurrent_requests: 2
+    temperature: 0.6
+
+  throughput:
+    description: Optimized for maximum throughput
+    max_batch_size: 16
+    max_concurrent_requests: 20
+    temperature: 0.9
+
+  balanced:
+    description: Balanced profile
+    max_batch_size: 4
+    max_concurrent_requests: 8
+    temperature: 0.8
