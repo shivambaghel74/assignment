@@ -1,31 +1,45 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from app.profiles import (
-    PROFILE,
-    ACTIVE_PROFILE,
-    MODEL_ID
-)
+from app.profiles import PROFILE, ACTIVE_PROFILE, MODEL_ID
 
-app = FastAPI()
+app = FastAPI(title="Model Server", version="1.0.0")
 
+# -------------------------
+# GLOBAL STATE
+# -------------------------
 MODEL_READY = False
 
 
+# -------------------------
+# STARTUP EVENT
+# -------------------------
 @app.on_event("startup")
 def startup():
     global MODEL_READY
     MODEL_READY = True
+    print("🚀 Model Server Started Successfully")
 
 
+# -------------------------
+# HEALTH CHECKS (PROD STANDARD)
+# -------------------------
+
+# Liveness probe (is app running?)
 @app.get("/v1/health/live")
 def live():
     return {"status": "alive"}
 
 
+# Simple health endpoint (used by your test.sh)
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+# Readiness probe (is model ready to serve?)
 @app.get("/v1/health/ready")
 def ready():
-
     if MODEL_READY:
         return {"status": "ready"}
 
@@ -35,9 +49,12 @@ def ready():
     )
 
 
+# -------------------------
+# MODEL INFO APIs
+# -------------------------
+
 @app.get("/v1/models")
 def models():
-
     return {
         "object": "list",
         "data": [
@@ -51,13 +68,15 @@ def models():
 
 @app.get("/v1/profiles")
 def profiles():
-
     return {
         "active_profile": PROFILE,
         "parameters": ACTIVE_PROFILE
     }
 
 
+# -------------------------
+# CHAT / INFERENCE API
+# -------------------------
 @app.post("/v1/chat/completions")
 def chat(request: dict):
 
